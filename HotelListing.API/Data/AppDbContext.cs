@@ -1,10 +1,12 @@
-﻿using HotelListing.API.Models;
+﻿using HotelListing.API.Data.Configurations;
+using HotelListingAPI.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Serilog.Sinks.SystemConsole.Themes;
 
 namespace HotelListing.API.Data
 {
-    public class AppDbContext : DbContext
+    public class AppDbContext : IdentityDbContext<APIUser > 
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
@@ -16,6 +18,7 @@ namespace HotelListing.API.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+            modelBuilder.ApplyConfiguration(new RoleConfiguration());
             modelBuilder.Entity<Country>().HasData(
                 new Country
                 {
