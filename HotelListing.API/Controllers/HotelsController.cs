@@ -10,6 +10,7 @@ using HotelListingAPI.Models;
 using HotelListing.API.Repository.IRepository;
 using AutoMapper;
 using HotelListing.API.DTOs.Hotel;
+using Microsoft.AspNetCore.Authorization;
 
 namespace HotelListing.API.Controllers
 {
@@ -29,6 +30,7 @@ namespace HotelListing.API.Controllers
         // POST: api/Hotels
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<Hotel>> PostHotel(CreateHotelDto createHotelDto)
         {
             var hotel =_mapper.Map<Hotel>(createHotelDto);
@@ -40,15 +42,17 @@ namespace HotelListing.API.Controllers
 
         // GET: api/Hotels
         [HttpGet]
+        [Authorize(Roles = "Admin, Users")]
         public async Task<ActionResult<IEnumerable<Hotel>>> GetHotels()
         {
             var hotels = await _unitOfWork.Hotel.GetAllAsync();
             var records = _mapper.Map<List<HotelDTO>>(hotels); 
-            return Ok(records); 
+            return Ok(records);  
         }
 
         // GET: api/Hotels/5
         [HttpGet("{id}")]
+        [Authorize(Roles = "Admin, Users")]
         public async Task<ActionResult<GetHotelDTO>> GetHotel(int id)
         {
             var hotel = await _unitOfWork.Hotel.GetAsync(id);
@@ -65,6 +69,7 @@ namespace HotelListing.API.Controllers
         // PUT: api/Hotels/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> PutHotel(int id, UpdateHotelDTO updateHotelDTO)
         {
             if (id != updateHotelDTO.Id)
@@ -98,6 +103,7 @@ namespace HotelListing.API.Controllers
 
         // DELETE: api/Hotels/5
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteHotel(int id)
         {
             await _unitOfWork.Hotel.DeleteAsync(id);

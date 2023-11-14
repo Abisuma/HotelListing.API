@@ -17,25 +17,27 @@ namespace HotelListing.API.Controllers
 {
     [Route("api/Countries")]
     [ApiController]
-    [Authorize]
+  
     
     public class CountriesController : ControllerBase
     {
         
         private readonly IMapper _mapper;
-        private readonly IUnitOfWork _unitOfWork;   
+        private readonly IUnitOfWork _unitOfWork;  
+        private readonly ILogger<CountriesController> _logger;   
 
-        public CountriesController( IMapper mapper, IUnitOfWork unitOfWork)
+        public CountriesController( IMapper mapper, IUnitOfWork unitOfWork, ILogger<CountriesController> logger)
         {
             
             _mapper = mapper;
-            _unitOfWork = unitOfWork;   
+            _unitOfWork = unitOfWork; 
+            _logger = logger;   
         }
 
         // POST: api/Countries
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<Country>> PostCountry(CreateCountryDTO countryDTO)
         {
            //mapping dto to model
@@ -47,6 +49,7 @@ namespace HotelListing.API.Controllers
 
         // GET: api/Countries
         [HttpGet]
+        [Authorize(Roles = "Admin, Users")]
         public async Task<ActionResult<IEnumerable<GetCountryDTO>>> GetCountries()
         {
             var countries = await _unitOfWork.Country.GetAllAsync();
@@ -56,6 +59,7 @@ namespace HotelListing.API.Controllers
 
         // GET: api/Countries/5
         [HttpGet("{id}")]
+        [Authorize(Roles = "Admin, Users")]
         public async Task<ActionResult<CountryDTO>> GetCountry(int id)
         {
             var countrywithhotels = await _unitOfWork.Country.GetCountryDetails(id); 
@@ -64,6 +68,7 @@ namespace HotelListing.API.Controllers
 
             if (countryDtoWithHotels == null)
             {
+                _logger.LogWarning($"Something went wrong in {nameof(GetCountry)},Country with the Id: {id} does not exist");
                 return NotFound();
             }
 
@@ -73,6 +78,7 @@ namespace HotelListing.API.Controllers
         // PUT: api/Countries/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> PutCountry(int id, UpdateCountryDTO updateCountryDto)
         {
             if (id != updateCountryDto.Id)
@@ -112,6 +118,7 @@ namespace HotelListing.API.Controllers
 
         // DELETE: api/Countries/5
         [HttpDelete("{id}")]
+        [Authorize(Roles ="Admin")]
         public async Task<IActionResult> DeleteCountry(int id)
         {
             
