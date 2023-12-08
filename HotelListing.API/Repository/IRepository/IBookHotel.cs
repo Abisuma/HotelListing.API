@@ -3,8 +3,8 @@ using HotelListingAPI.Models;
 
 namespace HotelListing.API.Repository.IRepository
 {
-    public interface ICountry: IGenericRepository<Country>
+    public interface IBookHotel: IGenericRepository<BookHotel>
     {
-        public Task<CountryDTO> GetCountryDetails(int id);
+        //public Task<CountryDTO> GetCountryDetails(int id);
     }
 }

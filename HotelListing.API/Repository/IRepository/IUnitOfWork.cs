@@ -4,5 +4,6 @@
     {
         ICountry Country { get; }
         IHotel Hotel { get; }
+        IBookHotel BookHotel { get; }
     }
 }

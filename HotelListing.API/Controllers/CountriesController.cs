@@ -12,67 +12,84 @@ using HotelListing.API.DTOs.Country;
 using HotelListing.API.Repository.IRepository;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Authorization;
+using HotelListingAPI.DTOs;
 
 namespace HotelListing.API.Controllers
 {
     [Route("api/Countries")]
     [ApiController]
-  
-    
+
+
     public class CountriesController : ControllerBase
     {
-        
-        private readonly IMapper _mapper;
-        private readonly IUnitOfWork _unitOfWork;  
-        private readonly ILogger<CountriesController> _logger;   
 
-        public CountriesController( IMapper mapper, IUnitOfWork unitOfWork, ILogger<CountriesController> logger)
+        private readonly IMapper _mapper;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly ILogger<CountriesController> _logger;
+
+        public CountriesController(IMapper mapper, IUnitOfWork unitOfWork, ILogger<CountriesController> logger)
         {
-            
+
             _mapper = mapper;
-            _unitOfWork = unitOfWork; 
-            _logger = logger;   
+            _unitOfWork = unitOfWork;
+            _logger = logger;
         }
 
         // POST: api/Countries
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
+        [Produces("application/json")]
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<Country>> PostCountry(CreateCountryDTO countryDTO)
         {
-           //mapping dto to model
-            var country = _mapper.Map<Country>(countryDTO);
-
-            await _unitOfWork.Country.AddAsync(country);
+            var country = await _unitOfWork.Country.AddAsync<CreateCountryDTO, Country>(countryDTO);
             return CreatedAtAction("GetCountry", new { id = country.CountryId }, country);
         }
 
         // GET: api/Countries
-        [HttpGet]
-        [Authorize(Roles = "Admin, Users")]
+        [HttpGet("GetAll")]
+        [Produces("application/json")]
+        [Authorize(Roles = "Admin, User")]
         public async Task<ActionResult<IEnumerable<GetCountryDTO>>> GetCountries()
         {
-            var countries = await _unitOfWork.Country.GetAllAsync();
-            var records = _mapper.Map<List<GetCountryDTO>>(countries);//mapped the retrieved Country query result to the GetCountryDTO 
-            return Ok(records);
+            var countries = await _unitOfWork.Country.GetAllAsync<GetCountryDTO>();
+            return Ok(countries);
         }
+
+        // GET: api/Countries/?StartIndex=0&PageSize=25&PageNumber=1
+        //[HttpGet]
+        //[Produces("application/json")]
+        //[Authorize(Roles = "Admin, User")]
+        //public async Task<ActionResult<PagedResult<GetCountryDTO>>> GetPagedCountries([FromQuery] QueryParameter queryParameter)
+        //{
+        //    var pagedCountriesResult = await _unitOfWork.Country.GetAllAsync<GetCountryDTO>(queryParameter);//mapping done in the genericrepository method.
+            
+        //    return Ok(pagedCountriesResult);
+        //}
 
         // GET: api/Countries/5
         [HttpGet("{id}")]
-        [Authorize(Roles = "Admin, Users")]
+        [Authorize(Roles = "Admin, User")]
         public async Task<ActionResult<CountryDTO>> GetCountry(int id)
         {
             var countrywithhotels = await _unitOfWork.Country.GetCountryDetails(id); 
+            return Ok(countrywithhotels);   
+        }
+        
+        [HttpGet("GetOneCountry/{id}")]
+        [Authorize(Roles = "Admin, User")]
+       
+        public async Task<ActionResult<CountryDTO>> GetOneCountry(int id)
+        {
+            var countrywithhotels = await _unitOfWork.Country.GetAsync<CountryDTO>(id); 
 
-            var countryDtoWithHotels = _mapper.Map<CountryDTO>(countrywithhotels);
-
-            if (countryDtoWithHotels == null)
+            if (countrywithhotels == null)
             {
-                _logger.LogWarning($"Something went wrong in {nameof(GetCountry)},Country with the Id: {id} does not exist");
+                _logger.LogWarning($"something went wrong in {nameof(GetOneCountry)},country with the id: {id} does not exist");
                 return NotFound();
             }
 
-            return countryDtoWithHotels;
+            return countrywithhotels;
         }
 
         // PUT: api/Countries/5
@@ -81,23 +98,10 @@ namespace HotelListing.API.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> PutCountry(int id, UpdateCountryDTO updateCountryDto)
         {
-            if (id != updateCountryDto.Id)
-            {
-                return BadRequest();
-            }
-
-            //_context.Entry(country).State = EntityState.Modified;
-            var country = await _unitOfWork.Country.GetAsync(id);       
-            if (country == null) 
-            {
-                return NotFound();
-            }
             
-           _mapper.Map(updateCountryDto, country);//assigned the values from the updateCountryDto to Country.country and EF will track and modified the values in the database.
-           
             try
             {
-                await _unitOfWork.Country.UpdateAsync(country);
+                await _unitOfWork.Country.UpdateAsync(id, updateCountryDto);
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -130,6 +134,7 @@ namespace HotelListing.API.Controllers
         private async Task<bool> CountryExists(int id)
         {
             return await _unitOfWork.Country.Exists(id);
+            
         }
     }
 }

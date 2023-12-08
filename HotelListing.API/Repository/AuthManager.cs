@@ -158,34 +158,6 @@ namespace HotelListing.API.Repository
 
         private async Task<string> GenerateToken()
         {
-            //var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:Key"]));
-            //var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-
-            //
-
-            //var roles = await _userManager.GetRolesAsync(_user);
-            //var rolesClaim = roles.Select(x => new Claim(ClaimTypes.Role,x)).ToList();
-
-            //var userClaims = await _userManager.GetClaimsAsync(_user);
-
-            //var claims = new List<Claim>
-            //{
-            //    new Claim(JwtRegisteredClaimNames.Sub, _user.Email),
-            //    new Claim(JwtRegisteredClaimNames.Jti, _user.Email),//Jti generate new guids to prevent playback
-            //    new Claim(JwtRegisteredClaimNames.Email, _user.Email),
-            //    new Claim("uid", _user.Id),
-            //}.Union(userClaims).Union(rolesClaim);
-
-            //var token = new JwtSecurityToken
-            //    (
-            //        issuer: _configuration["JwtSettings:Issuer"],
-            //        audience: _configuration["JwtSettings:Audience"],
-            //        claims: claims,
-            //        expires: DateTime.Now.AddDays(Convert.ToInt32(_configuration["JwtSettings:DurationInDays"])),
-            //        signingCredentials: credentials
-            //    ) ;
-            //return new JwtSecurityTokenHandler().WriteToken(token);
-
             var securitykey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:Key"]));
 
             var credentials = new SigningCredentials(securitykey, SecurityAlgorithms.HmacSha256);

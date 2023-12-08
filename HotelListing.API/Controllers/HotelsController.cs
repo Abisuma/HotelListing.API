@@ -11,6 +11,8 @@ using HotelListing.API.Repository.IRepository;
 using AutoMapper;
 using HotelListing.API.DTOs.Hotel;
 using Microsoft.AspNetCore.Authorization;
+using HotelListing.API.DTOs.Country;
+using HotelListingAPI.DTOs;
 
 namespace HotelListing.API.Controllers
 {
@@ -31,39 +33,40 @@ namespace HotelListing.API.Controllers
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<Hotel>> PostHotel(CreateHotelDto createHotelDto)
+        public async Task<ActionResult<HotelDTO>> PostHotel(CreateHotelDto createHotelDto)
         {
-            var hotel =_mapper.Map<Hotel>(createHotelDto);
-
-            await _unitOfWork.Hotel.AddAsync(hotel);
+            var hotel = await _unitOfWork.Hotel.AddAsync<CreateHotelDto,HotelDTO>(createHotelDto);
 
             return CreatedAtAction("GetHotel", new { id = hotel.Id }, hotel);
         }
 
         // GET: api/Hotels
-        [HttpGet]
+        [HttpGet("GetAllHotels")]
         [Authorize(Roles = "Admin, Users")]
-        public async Task<ActionResult<IEnumerable<Hotel>>> GetHotels()
+        public async Task<ActionResult<IEnumerable<GetHotelDTO>>> GetHotels()
         {
-            var hotels = await _unitOfWork.Hotel.GetAllAsync();
-            var records = _mapper.Map<List<HotelDTO>>(hotels); 
-            return Ok(records);  
-        }
+            var hotels = await _unitOfWork.Hotel.GetAllAsync<GetHotelDTO>(); 
+            return Ok(hotels);  
+         }
+
+        // GET: api/Countries/?StartIndex=0&PageSize=25&PageNumber=1
+        //[HttpGet]
+        //[Produces("application/json")]
+        ////[Authorize(Roles = "Admin, Users")]
+        //public async Task<ActionResult<PagedResult<GetHotelDTO>>> GetPagedHotels([FromQuery] QueryParameter queryParameter)
+        //{
+        //    var pagedHotelsResult = await _unitOfWork.Hotel.GetAllAsync<GetHotelDTO>(queryParameter);//mapping done in the genericrepository method.
+
+        //    return Ok(pagedHotelsResult);
+        //}
 
         // GET: api/Hotels/5
         [HttpGet("{id}")]
         [Authorize(Roles = "Admin, Users")]
         public async Task<ActionResult<GetHotelDTO>> GetHotel(int id)
         {
-            var hotel = await _unitOfWork.Hotel.GetAsync(id);
-
-            if (hotel == null)
-            {
-                return NotFound();
-            }
-            
-            var recordhotel = _mapper.Map<GetHotelDTO>(hotel);
-            return recordhotel;
+            var hotel = await _unitOfWork.Hotel.GetAsync<GetHotelDTO>(id);
+            return Ok(hotel);
         }
 
         // PUT: api/Hotels/5
@@ -72,17 +75,10 @@ namespace HotelListing.API.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> PutHotel(int id, UpdateHotelDTO updateHotelDTO)
         {
-            if (id != updateHotelDTO.Id)
-            {
-                return BadRequest();
-            }
-            var hotelToBeUpdated = await _unitOfWork.Hotel.GetAsync(id);
-            if (hotelToBeUpdated == null)   return NotFound();
-            _mapper.Map(updateHotelDTO,hotelToBeUpdated);
-
+           
             try
             {
-                await _unitOfWork.Hotel.UpdateAsync(hotelToBeUpdated);
+                await _unitOfWork.Hotel.UpdateAsync(id,updateHotelDTO);
             }
             catch (DbUpdateConcurrencyException)
             {

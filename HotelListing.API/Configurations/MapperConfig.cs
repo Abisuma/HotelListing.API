@@ -2,6 +2,7 @@
 using HotelListing.API.DTOs.Country;
 using HotelListing.API.DTOs.Hotel;
 using HotelListing.API.DTOs.User;
+using HotelListingAPI.DTOs.BookHotels;
 using HotelListingAPI.Models;
 using Microsoft.Build.Framework.Profiler;
 
@@ -24,8 +25,13 @@ namespace HotelListing.API.Configurations
                 CreateMap<Hotel, GetHotelDTO>().ReverseMap();
                 CreateMap<Hotel, UpdateHotelDTO>().ReverseMap();
 
-               //user mapping
-               CreateMap<APIUser, APIUserDto>().ReverseMap();
+            //BookingHotel mapping
+
+            CreateMap<BookHotel, BaseBookHotelDTO>().ReverseMap();
+            CreateMap<BookHotel, BookHotelDTO>().ReverseMap();
+
+            //user mapping
+            CreateMap<APIUser, APIUserDto>().ReverseMap();
         }
     }
 }

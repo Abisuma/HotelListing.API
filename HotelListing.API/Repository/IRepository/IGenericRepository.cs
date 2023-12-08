@@ -1,13 +1,20 @@
-﻿namespace HotelListing.API.Repository.IRepository
+﻿using HotelListingAPI.DTOs;
+
+namespace HotelListing.API.Repository.IRepository
 {
     public interface IGenericRepository<T>where T: class
     {
-        Task<T> CreateAsync(T entity);
-        Task<T> GetAsync(int? id);
-        Task UpdateAsync(T entity);  
-        Task DeleteAsync(int? id);  
-        Task<T> AddAsync(T entity);
-        Task<List<T>> GetAllAsync();
-        Task <bool> Exists(int id);    
+
+        Task<TResult> GetAsync<TResult>(int? id);
+
+        Task<List<TResult>> GetAllAsync<TResult>();
+
+        Task DeleteAsync(int? id);
+
+        Task UpdateAsync<TSource>(int id, TSource source) where TSource : IBaseDTO;
+        Task<TResult> AddAsync<TSource, TResult>(TSource source);
+
+        // Task<PagedResult<TResult>> GetAllAsync<TResult>(QueryParameter queryParameter);
+        Task<bool> Exists(int id);
     }
 }
